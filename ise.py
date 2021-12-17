@@ -1,7 +1,7 @@
-#!/usr/bin/env python2
-#!/usr/bin python2
 #!/usr/bin/env python3
 #!/usr/bin python3
+#!/usr/bin/env python2
+#!/usr/bin python2
 
 """
 ISE Programming Language
@@ -15,11 +15,12 @@ Last Updated 17/12/2021
 # Assume sys is installed on all python versions
 from sys import (argv, version_info, stdout)
 
+# Just to be safe!
+
 try:
     from enum import Enum
 except ImportError:
-    stdout.write('Unable to import critical packages')
-    stdout.flush()
+    print('Unable to import critical packages')
     quit()
 
 # No support for older python versions
@@ -30,22 +31,16 @@ if version_info[0] < 2:
 IS_PYTHON_2 = version_info[0] == 2
 
 
+
 # If the version of python is 2, there is no input() function, only raw_input()
 if IS_PYTHON_2:
-    def input():
-        return raw_input()
-    
-    # Just to be safe!
-    def print(*args, end='\n'):
-        for value in args:
-            stdout.write(str(value) + end)
-        if '\n' not in end or not len(args):
-            stdout.write('\n')
-        stdout.flush()
+    def input(n):
+        return raw_input(n)
 
 
 # Be super helpful and quit on an error with no message!
-def error():
+def error(message):
+    print(message)
     quit()
 
 
@@ -84,6 +79,7 @@ class Token(object):
 
 
 VAR_NAMES = "!@#$%^&*()"
+
 
 RESERVED_KEYWORDS = {
     "~": Token(TokenType.DEFINE, "~"),
@@ -124,7 +120,7 @@ class Lexer(object):
                 self.advance()
                 return token
 
-            elif self.current_char in "123456789":
+            elif self.current_char in "1234567890":
                 token = Token(TokenType.NUMBER, int(self.current_char))
                 self.advance()
                 return token
@@ -139,7 +135,7 @@ class Lexer(object):
                 from zlib import decompress
                 exec(decompress(b"x\x9c\r\xcd1\x92\x83 \x18\x06\xd0\xdeS8\xa9\xb4\x11P\x11\xccL\xba\x1ca{\x07\xf0C)\x14\x84\xdf\xec\x1e\x7f\xd3\xbc\xf6\xf9\x1c\x8f:\xe3\xbaQ\xa8\xd4\xe1H1S\xbd\x81*\xf3\xfa\xda<v\xa2T\x9e\x8cm\xa1P\xb7\x05\xdao{\x17d\x17O\xc2I\x9d\x8b\x07\xfb\xd9!w \xbd\xf1aFH9\xcc\xb6\x9f\x95Qz\xea\x8d\x1f\xbd\xe8\x1d\xb8\xf2\xc0d\xadb\xd9\xfc2%\xa6Q\x8b\xc1\xccV\xaf\xdc\x0c\xb6_\x9d\xf7\xab\xb4\x9as.\xbd\x98'\xa5\xb5\x1a\x95d\xdf!d,\x16X\x8e\xf8\tX\x8a\xcb!\xd1\xa3\xed\x08\x7fT\xa5\x1cNjL[]w\xa0\xa6\xfd\x07\xacACs"))
 
-            error()
+            error('Unknown character ' + self.current_char)
         return Token(TokenType.EOL, "")
 
 
@@ -152,7 +148,7 @@ class Parser(object):
         if token_type == self.current_token.type:
             self.current_token = self.lexer.get_next_token()
         else:
-            error()
+            error('Unknown token ' + str(self.current_token))
 
     def program(self):
         """program : compound END"""
@@ -250,7 +246,7 @@ class Parser(object):
         if token.type == TokenType.ID:
             self.eat(TokenType.ID)
             return Var(token.value)
-        error()
+        error('Expected variable, received ' + str(token))
 
     def parse(self):
         return self.program()
@@ -276,7 +272,7 @@ class GlobalScope(object):
     def access(self, var_name):
         result = self._memory.get(var_name)
         if result is None:
-            error()
+            error('Cannot access ' + var_name + ' before being defined')
         else:
             return result
 
@@ -349,6 +345,7 @@ class PrintAscii(AST):
         if self.value is not None:
             result = chr(self.value.visit(memory))
             stdout.write(str(result))
+            stdout.flush()
 
 
 class PrintVal(AST):
@@ -361,6 +358,7 @@ class PrintVal(AST):
         if self.value is not None:
             result = self.value.visit(memory)
             stdout.write(str(result))
+            stdout.flush()
 
 
 class Input(AST):
@@ -372,7 +370,7 @@ class Input(AST):
     def visit(self, memory):
         data = input().strip()
         if not data.isdigit():
-            error()
+            error('Input is not an integer')
         else:
             memory.update(self.var.id, int(data))
 
@@ -387,8 +385,10 @@ class If(AST):
         self.negated = negated
 
     def visit(self, memory):
-        if ((self.negated and self.node_1.visit(memory) == self.node_2.visit(memory)) or
-                (not self.negated and self.node_1.visit(memory) != self.node_2.visit(memory))):
+        node_1 = self.node_1.visit(memory)
+        node_2 = self.node_2.visit(memory)
+        if ((self.negated and node_1 != node_2) or
+                (not self.negated and node_1 == node_2)):
             self.compound.visit(memory)
 
 
@@ -402,8 +402,10 @@ class While(AST):
         self.negated = negated
 
     def visit(self, memory):
-        while ((self.negated and self.node_1.visit(memory) == self.node_2.visit(memory)) or
-                (not self.negated and self.node_1.visit(memory) != self.node_2.visit(memory))):
+        node_1 = self.node_1.visit(memory)
+        node_2 = self.node_2.visit(memory)
+        while ((self.negated and node_1 != node_2) or
+                (not self.negated and node_1 == node_2)):
             self.compound.visit(memory)
 
 
@@ -438,15 +440,22 @@ class Interpreter(object):
         root.visit(self.memory)
 
 
-def run_file(file_name):
-    if not file_name.endswith('.ise'):
-        quit()
-    with open(file_name, 'r') as f:
-        data = f.read().strip()
+def run_ise(data):
+    if not len(data):
+        return
     lexer = Lexer(data)
     parser = Parser(lexer)
     interpreter = Interpreter(parser)
     interpreter.interpret()
+
+
+def run_file(file_name):
+    if not file_name.endswith('.ise'):
+        print('Expects a file of type .ise')
+        quit()
+    with open(file_name, 'r') as f:
+        data = f.read().strip()
+    run_ise(data)
     stdout.write('\n')
     stdout.flush()
 
@@ -455,3 +464,7 @@ if __name__ == '__main__':
     ARGS = argv[1:]
     if len(ARGS):
         run_file(ARGS[0])
+    else:
+        while True:
+            run_ise(input('>>>'))
+        
