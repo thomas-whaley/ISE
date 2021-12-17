@@ -24,6 +24,7 @@ def main():
         cp ise ~/bin; 
         export PATH=$PATH":$HOME/bin"; 
         echo 'export PATH=$PATH":$HOME/bin"' >> .profile; 
+        source .profile;
         """)
     else:
         sys.stdout.write(platform + ' not supported.\n')
