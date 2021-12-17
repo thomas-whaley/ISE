@@ -40,7 +40,7 @@ if IS_PYTHON_2:
 
 # Be super helpful and quit on an error with no message!
 def error(message):
-    print(message)
+    # print(message)
     quit()
 
 
