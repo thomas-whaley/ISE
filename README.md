@@ -119,7 +119,7 @@ A conditional statement in ISE is either an if or while statement. The keywords 
 - If: `>`
 - While: `-`
 
-The syntax for these statements are both of `CONDITIONAL [NOT] NUMBER|VARIABLE NUMBER|VARIABLE LPAREN CODE RPAREN`. This can be thought of as conditional statement runs the code if the first value is the same as the second number, or if the optional not flag is set, if the first value is not the same as the second number.
+The syntax for these statements are both of `CONDITIONAL [NOT] NUMBER|VARIABLE NUMBER|VARIABLE LPAREN CODE RPAREN`. This can be thought of as conditional statement runs the code if the first value is the same as the second number, or if the optional not flag is set, if the first value is not the same as the second number. An important concept to note is that ISE allows the nesting of conditionals.
 
 We have declared a few keywords that we haven't defined yet, so let's do that now.
 
