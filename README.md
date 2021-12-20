@@ -171,7 +171,7 @@ An example of these in use is:
 
 The program to print `Hello World!` with one variable is:
 ```
-~!.!8:!9`!.!9.!9.!9.!2`!.!7`!`!.!3`!~!.!3:!9.!5`!~!.!1:!9:!9.!6`!.!9.!9.!6`!.!3`!,!6`!,!8`!~!.!3:!9.!6`!|
+~!.!8:!9`!.!9.!9.!9.!2`!.!7`!`!.!3`!;!3,!5`!:!2.!9.!9.!5`!.!9.!9.!6`!.!3`!,!6`!,!8`!;!3`!|
 ```
 
 The fibonacci sequence can be written as:
