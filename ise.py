@@ -385,10 +385,8 @@ class If(AST):
         self.negated = negated
 
     def visit(self, memory):
-        node_1 = self.node_1.visit(memory)
-        node_2 = self.node_2.visit(memory)
-        if ((self.negated and node_1 != node_2) or
-                (not self.negated and node_1 == node_2)):
+        if ((self.negated and self.node_1.visit(memory) != self.node_2.visit(memory)) or
+                (not self.negated and self.node_1.visit(memory) == self.node_2.visit(memory))):
             self.compound.visit(memory)
 
 
@@ -402,10 +400,8 @@ class While(AST):
         self.negated = negated
 
     def visit(self, memory):
-        node_1 = self.node_1.visit(memory)
-        node_2 = self.node_2.visit(memory)
-        while ((self.negated and node_1 != node_2) or
-                (not self.negated and node_1 == node_2)):
+        while ((self.negated and self.node_1.visit(memory) != self.node_2.visit(memory)) or
+                (not self.negated and self.node_1.visit(memory) == self.node_2.visit(memory))):
             self.compound.visit(memory)
 
 
